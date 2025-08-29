@@ -30,7 +30,7 @@ export async function POST(req) {
   const role = profile.role || 'user';
   const expiresAt = Date.now() + (expiresIn ?? 0) * 1000;
 
-  const res = NextResponse.json({ role: profile.role || 'user' }); 
+  const res = NextResponse.json({ accessToken, expiresIn, role }); 
   res.cookies.set('accessToken', accessToken, { 
     httpOnly: true, sameSite: 'lax', path: '/', maxAge: expiresIn 
   });

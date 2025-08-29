@@ -24,9 +24,8 @@ export async function POST() {
 
     const { accessToken, expiresIn, role } = await r.json();
     const expiresAt = Date.now() + (expiresIn ?? 0) * 1000;
-
-    // Return the new access token so callers (like the proxy) can immediately use it
     const res = NextResponse.json({ accessToken, expiresIn, role });
+    
     res.cookies.set('accessToken', accessToken, { 
       httpOnly: true, 
       sameSite: 'lax', 
@@ -38,8 +37,6 @@ export async function POST() {
       path: '/',
       maxAge: expiresIn 
     });
-    
-    // Preserve the role if returned from the refresh endpoint
     if (role) {
       res.cookies.set('role', role, { 
         sameSite: 'lax', 
