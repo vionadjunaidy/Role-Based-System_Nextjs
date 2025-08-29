@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import apiClient from '@/app/utils/apiClient';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -18,17 +19,7 @@ export default function ProfilePage() {
       try {
         setIsLoading(true);
         setError('');
-        const response = await fetch('/api/profile');
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            router.replace('/');
-            return;
-          }
-          throw new Error('Failed to fetch profile data');
-        }
-        
-        const data = await response.json();
+        const data = await apiClient.getProfile();
         setProfileData({
           email: data.email || '',
           role: data.role || data.role_name || '',
@@ -46,7 +37,7 @@ export default function ProfilePage() {
   }, [router]);
 
   const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
+    await apiClient.logout();
     router.replace('/');
   };
 

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import apiClient from '@/app/utils/apiClient';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,15 +17,12 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch('/api/profile');
-        if (response.ok) {
-          const data = await response.json();
-          setProfileData({
-            email: data.email || '',
-            role: data.role || data.role_name || '',
-            createdAt: data.created_at || data.createdAt || ''
-          });
-        }
+        const data = await apiClient.getProfile();
+        setProfileData({
+          email: data.email || '',
+          role: data.role || data.role_name || '',
+          createdAt: data.created_at || data.createdAt || ''
+        });
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
@@ -34,7 +32,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
+    await apiClient.logout();
     router.replace('/');
   };
 

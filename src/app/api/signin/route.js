@@ -15,7 +15,7 @@ export async function POST(req) {
     return NextResponse.json({ error: msg || 'Invalid credentials' }, { status: 401 });
   }
 
-  const { accessToken } = await loginRes.json();
+  const { accessToken, refreshToken, expiresIn } = await loginRes.json();
 
   const profileRes = await fetch(`${API}/profile`, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -27,9 +27,19 @@ export async function POST(req) {
   }
 
   const profile = await profileRes.json();
+  const role = profile.role || 'user';
+  const expiresAt = Date.now() + (expiresIn ?? 0) * 1000;
 
-  const res = NextResponse.json({ role: profile.role || 'user' });
-  res.cookies.set('accessToken', accessToken, { httpOnly: true, sameSite: 'lax', path: '/' });
-  res.cookies.set('role', profile.role || 'user', { sameSite: 'lax', path: '/' });
+  const res = NextResponse.json({ role: profile.role || 'user' }); 
+  res.cookies.set('accessToken', accessToken, { 
+    httpOnly: true, sameSite: 'lax', path: '/', maxAge: expiresIn 
+  });
+  res.cookies.set('refreshToken', refreshToken, { 
+    httpOnly: true, sameSite: 'lax', path: '/' 
+  });
+  res.cookies.set('accessExp', String(expiresAt), { 
+    sameSite: 'lax', path: '/', maxAge: expiresIn 
+  });
+  res.cookies.set('role', role, { sameSite: 'lax', path: '/' });
   return res;
 }
