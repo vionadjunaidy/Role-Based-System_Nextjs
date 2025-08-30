@@ -35,7 +35,6 @@ async function forward(req, params) {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            // Forward client cookies so /api/refresh can read refreshToken
             Cookie: req.headers.get('cookie') || ''
           }
         });
@@ -43,24 +42,22 @@ async function forward(req, params) {
       if (!rr.ok) {
         console.error('Token refresh failed with status:', rr.status);
           return new NextResponse(
-            JSON.stringify({ error: 'Session expired. Please login again.' }),
+            JSON.stringify({ error: 'Session expired. Please sign in again.' }),
             { status: 401, headers: { 'Content-Type': 'application/json' } }
           );
         }
-      // Prefer the token returned by the refresh endpoint so we don't rely on cookies mid-request
       let newToken = undefined;
       try {
         const refreshBody = await rr.json();
         newToken = refreshBody?.accessToken;
       } catch (_) {
-        // ignore JSON parse errors, will fallback to cookies
       }
       if (!newToken) {
         const newCookieStore = await cookies();
         newToken = newCookieStore.get('accessToken')?.value;
       }
       if (!newToken) {
-        console.error('No access token received after successful refresh');
+        console.error('No access token after refresh');
         throw new Error('No access token after refresh');
       }
 
